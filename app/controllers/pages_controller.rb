@@ -6,17 +6,8 @@ class PagesController < ApplicationController
   end
 
   def scan
-    require "google/cloud/vision"
-    # on your .env file define -> VISION_CREDENTIALS="{\"type\": \"service_account\",\"project_id\": \"project_name...
-
-    Google::Cloud::Vision.configure do |config|
-      config.credentials = JSON.parse(ENV.fetch('VISION_CREDENTIALS'))
-    end
-    client = Google::Cloud::Vision.image_annotator
     image_file = params[:image_file].tempfile
-
-    image = client.text_detection(image: image_file)
-    text = image.responses.first.text_annotations.first.description.split("\n").map(&:downcase).map(&:capitalize)
+    text = Ocr.extract_text(image_file)
 
     respond_to do |format|
       format.html # Follow regular flow of Rails
