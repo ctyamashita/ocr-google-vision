@@ -1,12 +1,25 @@
+require 'open-uri'
+
 class PagesController < ApplicationController
   def home
-    require "google/cloud/vision/v1"
-    client = ::Google::Cloud::Vision::V1::ProductSearch::Client.new do |config|
-      config.credentials = 'decoded-core-415502-dc9a34b903cb.json'
+    @text = params[:text]
+  end
+
+  def scan
+    require "google/cloud/vision"
+
+    Google::Cloud::Vision.configure do |config|
+      config.credentials = JSON.parse(ENV.fetch('VISION_CREDENTIALS'))
     end
-    vision = Google::Cloud::Vision.image_annotator
-    image = vision.text_detection(image: URI.open('/assets/images/ingredients.jpeg'))
+    client = Google::Cloud::Vision.image_annotator
+    image_file = params[:image_file].tempfile
+
+    image = client.text_detection(image: image_file)
     text = image.responses.first.text_annotations.first.description.split("\n").map(&:downcase).map(&:capitalize)
-    raise
+
+    respond_to do |format|
+      format.html # Follow regular flow of Rails
+      format.json { render partial: "pages/ingredients", locals: { text: text }, formats: [:html] }
+    end
   end
 end
