@@ -7,6 +7,7 @@ class PagesController < ApplicationController
 
   def scan
     require "google/cloud/vision"
+    # on your .env file define -> VISION_CREDENTIALS="{\"type\": \"service_account\",\"project_id\": \"project_name...
 
     Google::Cloud::Vision.configure do |config|
       config.credentials = JSON.parse(ENV.fetch('VISION_CREDENTIALS'))
